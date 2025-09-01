@@ -384,20 +384,17 @@ def chat():
     message = data.get('message', '').lower()
     response = {}
 
-    # Simple keyword-based intent detection
-    if 'prep' in message or 'checklist' in message:
+    # More robust intent detection
+    if any(k in message for k in ['prep', 'checklist']):
         return jsonify(VEHICLE_CHECKS)
-    elif 'mechanic' in message or 'stuck' in message or 'overheating' in message or 'flat' in message:
-        # Basic issue extraction
+    elif any(k in message for k in ['mechanic', 'stuck', 'overheating', 'flat', 'battery']):
         issue = 'stuck' # default
         if 'overheat' in message: issue = 'overheating'
-        if 'flat tire' in message: issue = 'flat tire'
+        if 'flat' in message: issue = 'flat tire'
         if 'battery' in message: issue = 'battery dead'
         solution = MECHANIC_ASSIST.get(issue, { 'error': 'Could not identify the specific issue.'})
         return jsonify({'issue': issue, 'solution': solution})
-    elif 'spontaneous' in message:
-        return plan_spontaneous_trip(duration_hours_override=4)
-    elif 'late-night' in message or 'late night' in message:
+    elif any(k in message for k in ['late-night', 'late night', 'at night']):
         destination = 'nearby' # default
         words = message.split()
         if 'to' in words:
@@ -408,13 +405,15 @@ def chat():
             except ValueError:
                 pass
         return plan_late_night_trip(destination_override=destination)
-    elif 'tip' in message or 'etiquette' in message:
+    elif any(k in message for k in ['spontaneous', 'quick trip', 'short trip', 'plan a trip']):
+        return plan_spontaneous_trip(duration_hours_override=4)
+    elif any(k in message for k in ['tip', 'etiquette']):
         category = random.choice(list(OFFROAD_GUIDE.keys()))
         tip = random.choice(OFFROAD_GUIDE[category])
         return jsonify({'title': 'Random Tip', 'category': category, 'tip': tip})
     elif 'guide' in message:
         return get_guide()
-    elif ('saved' in message and 'trip' in message) or 'my trips' in message:
+    elif any(k in message for k in ['saved trips', 'my trips', 'trip history']):
         if not current_user.is_authenticated:
             return jsonify({'error': 'You must be logged in to view saved trips. Please <a href="/login">login</a> or <a href="/register">register</a>.'}), 401
         return get_saved_trips()
