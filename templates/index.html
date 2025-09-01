@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offroad Trip Planner</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Offroad Trip Planner</h1>
+        <p>Your intelligent assistant for every adventure.</p>
+        <nav>
+            {% if current_user.is_authenticated %}
+                <span>Welcome, {{ current_user.username }}!</span>
+                <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn">Login</a>
+                <a href="{{ url_for('register') }}" class="btn">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- Spontaneous & Late-Night Planner -->
+        <section class="card">
+            <h2>Quick Plan</h2>
+            <div class="form-group">
+                <input type="text" id="destination" placeholder="Enter a destination (for late-night)">
+                <button onclick="planLateNightTrip()">Plan Late-Night Trip</button>
+            </div>
+            <div class="form-group">
+                <input type="number" id="duration" placeholder="Trip duration in hours (for spontaneous)" value="4">
+                <button onclick="planSpontaneousTrip()">Plan Spontaneous Trip</button>
+            </div>
+        </section>
+
+        <!-- Mechanic & Maintenance -->
+        <section class="card">
+            <h2>Vehicle Prep &amp; Assistance</h2>
+            <div class="form-group">
+                <input type="text" id="issue" placeholder="Describe a mechanical issue (e.g., flat tire)">
+                <button onclick="getMechanicAssist()">Get Mechanic Assist</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="trip-type" placeholder="Trip type (e.g., desert, mountains)">
+                <input type="number" id="mileage" placeholder="Current vehicle mileage">
+                <button onclick="getAnticipatedMaintenance()">Anticipate Maintenance</button>
+            </div>
+        </section>
+
+        <!-- Guide & Tips -->
+        <section class="card">
+            <h2>Guides &amp; Tips</h2>
+            <div class="form-group">
+                <button onclick="getRandomTip()">Get a Random Tip</button>
+                <button onclick="getFullGuide()">View Full Offroad Guide</button>
+            </div>
+        </section>
+
+        <!-- Saved Trips -->
+        <section class="card">
+            <h2>My Saved Trips</h2>
+            <div id="saved-trips">
+                {% if current_user.is_authenticated %}
+                    <button onclick="getSavedTrips()">Refresh Saved Trips</button>
+                    <ul id="saved-trips-list">
+                        <!-- Trips will be loaded here by JavaScript -->
+                    </ul>
+                {% else %}
+                    <p><a href="{{ url_for('login') }}">Login</a> to see your saved trips.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Results Display -->
+        <section id="results-card" class="card results-card" style="display: none;">
+            <h2>Results</h2>
+            <pre id="results"></pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built by Cascade</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
