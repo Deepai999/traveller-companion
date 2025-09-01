@@ -371,12 +371,6 @@ def init_db_command():
         db.create_all()
     print('Initialized the database.')
 
-@app.route('/_internal_init_db')
-def internal_init_db():
-    with app.app_context():
-        db.create_all()
-    return 'Database initialized successfully.', 200
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=True)
