@@ -364,12 +364,18 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.cli.command("init-db")
+@app.cli.command('init-db')
 def init_db_command():
-    """Creates the database tables."""
+    """Initializes the database."""
     with app.app_context():
         db.create_all()
-    print("Initialized the database.")
+    print('Initialized the database.')
+
+@app.route('/_internal_init_db')
+def internal_init_db():
+    with app.app_context():
+        db.create_all()
+    return 'Database initialized successfully.', 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
