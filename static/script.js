@@ -11,13 +11,17 @@ async function handleRequest(endpoint, options = {}, isTripPlan = false) {
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, options);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'An unknown server error occurred.' }));
+            throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
+        }
         const data = await response.json();
         resultsDiv.innerHTML = displayTripResults(data);
         if (isTripPlan) {
             getSavedTrips(); // Refresh saved trips list after planning a new one
         }
     } catch (error) {
-        resultsDiv.textContent = `Error: ${error.message}`;
+        resultsDiv.innerHTML = `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
     } finally {
         loader.style.display = 'none';
     }
