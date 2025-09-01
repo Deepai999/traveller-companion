@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import random
 import os
+import requests
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -134,10 +135,13 @@ def get_weather(destination):
         return {'error': str(e)}
 
 @app.route('/api/plan/late-night', methods=['POST'])
-def plan_late_night_trip():
+def plan_late_night_trip(destination_override=None):
     """Generate a late-night offroad trip plan with weather data"""
-    data = request.json
-    destination = data.get('destination')
+    if destination_override:
+        destination = destination_override
+    else:
+        data = request.json
+        destination = data.get('destination')
 
     if not destination:
         return jsonify({'error': 'Destination is required'}), 400
@@ -177,10 +181,13 @@ def plan_late_night_trip():
     return jsonify(trip_details)
 
 @app.route('/api/plan/spontaneous', methods=['POST'])
-def plan_spontaneous_trip():
+def plan_spontaneous_trip(duration_hours_override=None):
     """Generate a dynamic spontaneous offroad trip plan"""
-    data = request.json
-    duration_hours = int(data.get('duration_hours', 4))
+    if duration_hours_override:
+        duration_hours = int(duration_hours_override)
+    else:
+        data = request.json
+        duration_hours = int(data.get('duration_hours', 4))
 
     # Expanded list of potential activities
     all_activities = [
@@ -370,6 +377,52 @@ def init_db_command():
     with app.app_context():
         db.create_all()
     print('Initialized the database.')
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json
+    message = data.get('message', '').lower()
+    response = {}
+
+    # Simple keyword-based intent detection
+    if 'prep' in message or 'checklist' in message:
+        return jsonify(VEHICLE_CHECKS)
+    elif 'mechanic' in message or 'stuck' in message or 'overheating' in message or 'flat' in message:
+        # Basic issue extraction
+        issue = 'stuck' # default
+        if 'overheat' in message: issue = 'overheating'
+        if 'flat tire' in message: issue = 'flat tire'
+        if 'battery' in message: issue = 'battery dead'
+        solution = MECHANIC_ASSIST.get(issue, { 'error': 'Could not identify the specific issue.'})
+        return jsonify({'issue': issue, 'solution': solution})
+    elif 'spontaneous' in message:
+        return plan_spontaneous_trip(duration_hours_override=4)
+    elif 'late-night' in message or 'late night' in message:
+        destination = 'nearby' # default
+        words = message.split()
+        if 'to' in words:
+            try:
+                dest_index = words.index('to') + 1
+                if dest_index < len(words):
+                    destination = words[dest_index]
+            except ValueError:
+                pass
+        return plan_late_night_trip(destination_override=destination)
+    elif 'tip' in message or 'etiquette' in message:
+        category = random.choice(list(OFFROAD_GUIDE.keys()))
+        tip = random.choice(OFFROAD_GUIDE[category])
+        return jsonify({'title': 'Random Tip', 'category': category, 'tip': tip})
+    elif 'guide' in message:
+        return get_guide()
+    elif ('saved' in message and 'trip' in message) or 'my trips' in message:
+        if not current_user.is_authenticated:
+            return jsonify({'error': 'You must be logged in to view saved trips. Please <a href="/login">login</a> or <a href="/register">register</a>.'}), 401
+        return get_saved_trips()
+    else:
+        response = {
+            'error': 'I am not sure how to help with that. Try asking me to "plan a spontaneous trip" or "give me a random tip".'
+        }
+        return jsonify(response), 400
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

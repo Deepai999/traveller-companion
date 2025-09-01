@@ -21,64 +21,20 @@
         </nav>
     </header>
 
-    <main class="container">
-        <!-- Spontaneous & Late-Night Planner -->
-        <section class="card">
-            <h2>Quick Plan</h2>
-            <div class="form-group">
-                <input type="text" id="destination" placeholder="Enter a destination (for late-night)">
-                <button onclick="planLateNightTrip()">Plan Late-Night Trip</button>
+    <main class="chat-container">
+        <div id="chat-window" class="chat-window">
+            <!-- Messages will appear here -->
+            <div class="message message-assistant">
+                <p>Hello! I'm your off-road trip planning assistant. How can I help you today? You can ask me to plan a trip, get vehicle prep tips, or find a local mechanic.</p>
             </div>
-            <div class="form-group">
-                <input type="number" id="duration" placeholder="Trip duration in hours (for spontaneous)" value="4">
-                <button onclick="planSpontaneousTrip()">Plan Spontaneous Trip</button>
-            </div>
-        </section>
-
-        <!-- Mechanic & Maintenance -->
-        <section class="card">
-            <h2>Vehicle Prep &amp; Assistance</h2>
-            <div class="form-group">
-                <input type="text" id="issue" placeholder="Describe a mechanical issue (e.g., flat tire)">
-                <button onclick="getMechanicAssist()">Get Mechanic Assist</button>
-            </div>
-            <div class="form-group">
-                <input type="text" id="trip-type" placeholder="Trip type (e.g., desert, mountains)">
-                <input type="number" id="mileage" placeholder="Current vehicle mileage">
-                <button onclick="getAnticipatedMaintenance()">Anticipate Maintenance</button>
-            </div>
-        </section>
-
-        <!-- Guide & Tips -->
-        <section class="card">
-            <h2>Guides &amp; Tips</h2>
-            <div class="form-group">
-                <button onclick="getRandomTip()">Get a Random Tip</button>
-                <button onclick="getFullGuide()">View Full Offroad Guide</button>
-            </div>
-        </section>
-
-        <!-- Saved Trips -->
-        <section class="card">
-            <h2>My Saved Trips</h2>
-            <div id="saved-trips">
-                {% if current_user.is_authenticated %}
-                    <button onclick="getSavedTrips()">Refresh Saved Trips</button>
-                    <ul id="saved-trips-list">
-                        <!-- Trips will be loaded here by JavaScript -->
-                    </ul>
-                {% else %}
-                    <p><a href="{{ url_for('login') }}">Login</a> to see your saved trips.</p>
-                {% endif %}
-            </div>
-        </section>
-
-        <!-- Results Display -->
-        <section id="results-card" class="card results-card" style="display: none;">
-            <h2>Results</h2>
-            <div id="loader" class="loader" style="display: none;"></div>
-            <div id="results"></div>
-        </section>
+        </div>
+        <div id="login-prompt" class="login-prompt" style="display: none;">
+            <p><a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('register') }}">Register</a> to save your trips and see your trip history.</p>
+        </div>
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="message-input" placeholder="Ask me anything..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
     </main>
 
     <footer>
