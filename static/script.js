@@ -2,8 +2,12 @@ const API_URL = 'http://127.0.0.1:5001/api';
 
 async function handleRequest(endpoint, options = {}, isTripPlan = false) {
     const resultsCard = document.getElementById('results-card');
-    const resultsEl = document.getElementById('results');
+    const resultsDiv = document.getElementById('results');
+    const loader = document.getElementById('loader');
+
     resultsCard.style.display = 'block';
+    resultsDiv.innerHTML = '';
+    loader.style.display = 'block';
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, options);
@@ -14,6 +18,8 @@ async function handleRequest(endpoint, options = {}, isTripPlan = false) {
         }
     } catch (error) {
         resultsDiv.textContent = `Error: ${error.message}`;
+    } finally {
+        loader.style.display = 'none';
     }
 }
 
