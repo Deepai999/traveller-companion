@@ -3,19 +3,64 @@ const API_URL = 'http://127.0.0.1:5001/api';
 async function handleRequest(endpoint, options = {}, isTripPlan = false) {
     const resultsCard = document.getElementById('results-card');
     const resultsEl = document.getElementById('results');
-    resultsEl.textContent = 'Loading...';
     resultsCard.style.display = 'block';
 
     try {
         const response = await fetch(`${API_URL}${endpoint}`, options);
         const data = await response.json();
-        resultsEl.textContent = JSON.stringify(data, null, 2);
+        resultsDiv.innerHTML = displayTripResults(data);
         if (isTripPlan) {
             getSavedTrips(); // Refresh saved trips list after planning a new one
         }
     } catch (error) {
-        resultsEl.textContent = `Error: ${error.message}`;
+        resultsDiv.textContent = `Error: ${error.message}`;
     }
+}
+
+function displayTripResults(data) {
+    let html = '<h4>Trip Details</h4>';
+
+    if (data.destination) {
+        html += `<p><strong>Destination:</strong> ${data.destination}</p>`;
+    }
+
+    if (data.estimated_arrival) {
+        html += `<p><strong>Estimated Arrival:</strong> ${new Date(data.estimated_arrival).toLocaleString()}</p>`;
+    }
+
+    if (data.duration_hours) {
+        html += `<p><strong>Duration:</strong> ${data.duration_hours} hours</p>`;
+    }
+
+    if (data.weather && Object.keys(data.weather).length > 0) {
+        html += '<h5>Weather Forecast</h5>';
+        html += '<ul>';
+        for (const [key, value] of Object.entries(data.weather)) {
+            html += `<li><strong>${key.replace('_', ' ')}:</strong> ${value}</li>`;
+        }
+        html += '</ul>';
+    }
+
+    if (data.recommended_gear) {
+        html += '<h5>Recommended Gear</h5>';
+        html += `<ul>${data.recommended_gear.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    }
+
+    if (data.suggested_activities) {
+        html += '<h5>Suggested Activities</h5>';
+        html += `<ul>${data.suggested_activities.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    }
+
+    if (data.safety_notes) {
+        html += '<h5>Safety Notes</h5>';
+        html += `<ul>${data.safety_notes.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    }
+
+    if (data.notes) {
+        html += `<p><strong>Notes:</strong> ${data.notes}</p>`;
+    }
+
+    return html;
 }
 
 function planLateNightTrip() {
